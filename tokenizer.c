@@ -3,9 +3,87 @@
 #include<ctype.h>
 #include<string.h>
 
+// Extra Credit #2 If string contains // or /*, skip through string until newline or */ is found or the string terminates
+// return appropriate index where comment ends 
+int isComment(char* input, int index){
+    // handle comment formatted as '//'
+    if(input[index] == '/' && input[index+1] == '/'){
+        // continue until newline or string terminates
+        while(input[index] != '\n' && input[index] != '\0'){
+            index++;
+        }
+    // handle comment formatted as '/*', if no */ is found then treat rest of string as comment and 
+    // return index of end of string
+    } else if(input[index] == '/' && input[index+1] == '*'){
+        // skip past the /*
+        index+=2;
+        while(input[index] != '*' && input[index+1] != '/'){
+            // handle end of string
+            if(input[index+1] == '\0'){
+                index--;
+                break;
+            }
+            index++;
+        }
+        // skip the */
+        index+=2;
+    }
+    return index;
+}
+
+// Extra Credit #3, if string contains " or ', save starting index+1 and find closing " or '. 
+// Copy substring of chars inside the quote into new string and print that, return index 
+int isQuote(char* input, int index){
+    if(input[index] == '\''){
+        index++;
+        // starting index is index of first char inside the quote
+        int start = index;
+        while(input[index] != '\''){
+            index++;
+            // if end of string is reached without end quote return -1
+            if(input[index]=='\0'){
+                return -1;
+            }
+        }
+        // memory allocate space for the quote plus a null terminator and copy the substring
+        char* quote = (char*)malloc((index - start + 1)*sizeof(char));
+        strncpy(quote, input+start, index-start);
+        // append null terminator to end of substring 
+        quote[index-start] = '\0';  
+        // print quote token
+        printf("quote: \"%s\"\n",quote);
+        // escape out of quote
+        index++;
+        // free quote
+        free(quote);
+    } else if(input[index] == '\"'){
+        index++;
+        // starting index is index of first char inside the quote
+        int start = index;
+        while(input[index]!='\"'){
+            index++;
+            // if end of string is reached without end quote return -1
+            if(input[index]=='\0'){
+                return -1;
+            }
+        }
+        // memory allocate space for the quote plus a null terminator and copy the substring
+        char* quote = (char*)malloc((index - start + 1)*sizeof(char));
+        strncpy(quote, input+start, index-start);
+        // append null terminator to end of substring
+        quote[index-start] = '\0';  
+        // print quote token
+        printf("quote: \"%s\"\n",quote);
+        // escape out of quote
+        index++;
+        // free quote
+        free(quote);
+    }
+    return index;
+}
 
 int isDelim(char* input, int index){
-    //traverse string and skip all the spaces
+    //traverse string and skip all the spaces, return index of the first non-space char
     while(isspace(input[index])){
         index++;
     }
@@ -202,8 +280,9 @@ int isOperator(char* input, int index) {
 	return index;
 }
 
+// Extra Credit #1, also handles printing of regular words
 void isKeyword(char* input){
-    // go through a million if statements and check if the word is a keyword :( if not then print as regular word
+    // go through if statements and check if the word is a keyword, if not then print as regular word
     if(strcmp(input,"auto")==0){
         printf("%s: \"%s\"",input,input);
     } else if(strcmp(input,"const")==0) {
@@ -285,17 +364,16 @@ int isWord(char* input, int index){
     } else {
         return index;
     }
-    // memory allocate space for the word plus a null terminator and copy the indexed substring of the word into word
+    // memory allocate space for the word plus a null terminator and copy the substring into space
     char* word = (char*)malloc((index - start + 1)*sizeof(char));
     strncpy(word, input+start, index-start);
-    // add null terminator to prevent memory skaboodle
+    // append null terminator to end of substring
     word[index-start] = '\0';  
-    // enter printing sicko mode
+    // enter printing function
     isKeyword(word);
     printf("\n");
     // free word memory 
-    free(word);
-    // go back to tokenizer with updated 
+    free(word); 
     return index;
 }
 
@@ -407,8 +485,21 @@ int isNum(char* input, int index) {
 void tokenizer(char* input){
     int index = 0;
     while(input[index]!='\0'){
-        int wee = index;
+        int startindex = index;
         index = isDelim(input, index);
+        if(input[index]=='\0'){
+            break;
+        }
+        index = isComment(input, index);
+        if(input[index]=='\0'){
+            break;
+        }
+        index = isQuote(input, index);
+        // isQuote returns -1 if no end quote is found, print error in this case
+        if(index == -1){
+            printf("ERROR: unmatched quote\n");
+            break;
+        }
         if(input[index]=='\0'){
             break;
         }
@@ -424,8 +515,9 @@ void tokenizer(char* input){
         if(input[index]=='\0'){
             break;
         }
-        if(wee == index){
-            printf("ERROR: you fucked up");
+        // if no updates were made to index then that indicates the program tried to tokenize an unrecognized char
+        if(startindex == index){
+            printf("ERROR: invalid input");
             break;
         }
     }
