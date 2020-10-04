@@ -527,7 +527,7 @@ int main(int argc, char **argv)
 {
     // check if only 1 argument
     if(argc!=2){
-        printf("ERROR: invalid number of arguments");
+        printf("ERROR: invalid number of arguments\n");
         return -1;
     }
     char* input = argv[1];
