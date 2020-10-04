@@ -517,7 +517,7 @@ void tokenizer(char* input){
         }
         // if no updates were made to index then that indicates the program tried to tokenize an unrecognized char
         if(startindex == index){
-            printf("ERROR: invalid input");
+            printf("ERROR: invalid input\n");
             break;
         }
     }
@@ -527,6 +527,7 @@ int main(int argc, char **argv)
 {
     // check if only 1 argument
     if(argc!=2){
+        printf("ERROR: invalid number of arguments");
         return -1;
     }
     char* input = argv[1];
